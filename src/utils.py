@@ -6,6 +6,7 @@ import dill
 
 import numpy as np
 import pandas as pd
+from sklearn.model_selection import GridSearchCV
 
 from src.exception import CustomException
 
@@ -19,11 +20,16 @@ def save_object(file_path: str, obj):
     except Exception as e:
         raise CustomException(e, sys)
     
-def evaluate_model(X, y, X_test, y_test, models):
+def evaluate_model(X, y, X_test, y_test, models,param_grid):
     try:
         report = {}
         for i in range(len(models)):
             model = list(models.values())[i]
+            param = param_grid[list(models.keys())[i]]
+            
+            gs = GridSearchCV(model, param, cv=3)
+            gs.fit(X, y)
+            model.set_params(**gs.best_params_)
             model.fit(X, y)
             
             y_train_pred = model.predict(X)
